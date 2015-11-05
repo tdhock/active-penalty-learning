@@ -1,0 +1,117 @@
+\documentclass{article}
+\usepackage{fullpage}
+\usepackage{natbib}
+\usepackage{amsmath, amssymb}
+\newcommand{\RR}{\mathbb R}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\sign}{sign}
+\DeclareMathOperator*{\Lik}{Lik}
+\DeclareMathOperator*{\Peaks}{Peaks}
+\DeclareMathOperator*{\HotSpots}{HotSpots}
+\newcommand{\Cost}{\text{Cost}}
+\usepackage{stfloats}
+\DeclareMathOperator*{\Diag}{Diag}
+\DeclareMathOperator*{\TPR}{TPR}
+\DeclareMathOperator*{\Segments}{Segments}
+\DeclareMathOperator*{\FPR}{FPR}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\maximize}{maximize}
+\DeclareMathOperator*{\minimize}{minimize}
+\newcommand{\ZZ}{\mathbb Z}
+\newcommand{\NN}{\mathbb N}
+
+\begin{document}
+
+\title{Active penalty learning}
+
+\author{Toby Dylan Hocking and Jia Yuan Yu}
+
+\maketitle
+
+\section{Introduction}
+
+The current state-of-the-art for selecting profiles to label on
+SegAnnDB is random sampling \citep{HOCKING-SegAnnDB}. The goal of this article
+is to develop a method for selecting data to label that can achieve
+minimal test error faster than random sampling.
+
+\section{Data and problem statement}
+
+\subsection{Binary classification}
+
+To simplify the analysis let us first consider the binary
+classification problem. Assume we have $N$ training data $(\mathbf
+x_1, y_1), \dots, (\mathbf x_N, y_N)$ and $M$ test data $(\mathbf
+x_1', y_1'), \dots, (\mathbf x_M', y_M')$. Input features are $\mathbf
+x_n\in\RR^d$ and output labels are $y_n\in\{-1, 1\}$ for all
+$n\in\{1,\dots,N\}$. Train and test data are all independent and
+identically distributed (iid from some distribution $\mathcal P$).
+
+The goal is to find a classification function $c:\RR\rightarrow\{-1,
+1\}$ with minimum incorrect labels in the test data:
+\begin{equation}
+  \label{eq:min_test_error}
+  \minimize_c \sum_{m=1}^M
+  I\left[
+    c(\mathbf x_m) \neq y_m
+  \right],
+\end{equation}
+where $I(\cdot)\in\{0,1\}$ is the indicator function.
+
+The learner starts with knowledge only of the train and test features:
+$\mathbf x_1, \dots, \mathbf x_N, \mathbf x_1', \dots, \mathbf
+x_M'$. The learner then gets to select a training data point $n\in\{1,
+\dots, N\}$ for which the label $y_n$ will be revealed. It may be
+useful to think of the selection function $S$ in terms of the set of
+training data $S(\cdot)\in\{1,\dots, n\}$ or in terms of the input
+feature space $S(\cdot)\in\RR^d$. There are $T= N-1$ decisions to make
+(the last decision is trivial: reveal the label of the last data
+point). For each decision step $t\in\{1, \dots T\}$ let
+$n_t\in\{1,\dots, N\}$ denote the data point that is selected, and let
+$\mathcal N_t=\{n_1, \dots, n_t\}$ denote the set of data points that
+have been selected. For a given set of data points $\mathcal
+N\subseteq \{1, \dots, N\}$, we fit a linear model
+\begin{equation}
+  \label{eq:argmin_w}
+  \mathbf{\hat w}_{\mathcal N} = 
+  \argmin_{\mathbf w \in \RR^d} 
+  \sum_{n\in\mathcal N} \ell\left[
+    \mathbf w^\intercal \mathbf x_n, y_n
+  \right],
+\end{equation}
+where $\ell:\RR \times \{-1, 1\}\rightarrow \RR_+$ is a regularized
+convex loss function (L1-regularized logistic regression would be a
+choice that is analogous to what we are doing in the real data case).
+For a given weight vector $\mathbf w\in\RR^d$, the class prediction
+function $c_{\mathbf w}:\RR^d\rightarrow\{-1, 1\}$ is
+\begin{equation}
+  \label{eq:c_w}
+  c_{\mathbf w}(\mathbf x) =
+  \begin{cases}
+    1 & \text{ if } \mathbf w^\intercal \mathbf x > 0, \\
+    -1 & \text{ otherwise.}
+  \end{cases}
+\end{equation}
+
+One way to formulate of the data point selection at step $t$ is 
+\begin{equation}
+  \label{eq:argmin_n_t}
+  n_{t+1} =
+  \argmin_{n\in\{1,\dots,N\} \setminus \mathcal N_t}
+  \sum_{m=1}^M
+  I\left[
+    c_{\mathbf{\hat w}_{\mathcal N_t \cup \{n\}}}(\mathbf x'_m) \neq y_m'
+  \right].
+\end{equation}
+
+\subsection{Penalty learning}
+
+It should be straightforward to translate any results we get in the
+binary classification case to the penalty learning problem that we
+solve in practice \citep{HOCKING-penalties}.
+
+\bibliographystyle{abbrvnat}
+
+\bibliography{refs}
+
+\end{document}
