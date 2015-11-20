@@ -1,0 +1,3 @@
+Maybe get some references from [[http://burrsettles.com/pub/settles.activelearning.pdf][Burr Settles' Literature Survey]].
+
+Koller's [[http://ai.stanford.edu/~koller/Papers/Tong%2BKoller:ICML00.pdf][SVM Active Learning]] (ICML-2000).
